@@ -1,7 +1,7 @@
 !pip install gensim
 import gensim.downloader as api
 
-model = api.load("glove-twitter-25")
+model = api.load("glove-twitter-25") 
 
 print(f"Similarity between 'king' and 'queen': {model.similarity('king', 'queen'):.4f}")
 
