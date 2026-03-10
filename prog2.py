@@ -10,7 +10,7 @@ words = ['ai', 'computer', 'software', 'database', 'network', 'cloud',
 
 vectors = np.array([model[word] for word in words])
 
-pca = PCA(n_components=2)
+pca = PCA(n_components=2) 
 result = pca.fit_transform(vectors)
 
 plt.figure(figsize=(8, 6))
