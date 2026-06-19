@@ -1,28 +1,10 @@
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+!pip install transformers==4.52.4 sentencepiece accelerate
+from transformers import pipeline
 
-tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
-model = AutoModelForSeq2SeqLM.from_pretrained("facebook/bart-large-cnn")
-
-def summarize_text(text, max_length=130, min_length=50):
-    inputs = tokenizer(
-        text,
-        max_length=1024,
-        truncation=True,
-        return_tensors="pt"
-    )
-
-    summary_ids = model.generate(
-        inputs["input_ids"],
-        num_beams=4,
-        min_length=min_length,
-        max_length=max_length,
-        early_stopping=True
-    )
-
-    return tokenizer.decode(
-        summary_ids[0],
-        skip_special_tokens=True
-    )
+summarizer = pipeline(
+    "summarization",
+    model="facebook/bart-large-cnn"
+)
 
 long_text = """
 Artificial Intelligence (AI) is a rapidly advancing field that aims to create machines capable of human-like thinking.
@@ -32,10 +14,15 @@ With deep learning, neural networks can process vast amounts of information and 
 to advancements in self-driving cars, natural language processing, and medical diagnostics.
 """
 
-summary = summarize_text(long_text)
+summary = summarizer(
+    long_text,
+    max_length=130,
+    min_length=50,
+    do_sample=False
+)
 
 print("Original Text:")
 print(long_text)
 
 print("\nSummarized Text:")
-print(summary)
+print(summary[0]["summary_text"])
