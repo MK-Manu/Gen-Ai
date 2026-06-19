@@ -1,9 +1,22 @@
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from transformers import pipeline
 
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
+model = AutoModelForSeq2SeqLM.from_pretrained("facebook/bart-large-cnn")
+
+summarizer = pipeline(
+    "summarization",
+    model=model,
+    tokenizer=tokenizer
+)
 
 def summarize_text(text, max_length=130, min_length=50):
-    summary = summarizer(text, max_length=max_length, min_length=min_length, do_sample=False)
+    summary = summarizer(
+        text,
+        max_length=max_length,
+        min_length=min_length,
+        do_sample=False
+    )
     return summary[0]["summary_text"]
 
 long_text = """
