@@ -1,37 +1,49 @@
-!pip install wikipedia-api
-import wikipediaapi, re
+!pip install wikipedia-api pydantic ipywidgets
+
+import wikipediaapi
 from pydantic import BaseModel
-from typing import Optional
+import ipywidgets as widgets
+from IPython.display import display
 
-class Details(BaseModel):
-    founder: Optional[str] = None
-    founded: Optional[str] = None
-    branches: Optional[str] = None
-    employees: Optional[str] = None
-    summary: Optional[str] = None
+class Institution(BaseModel):
+    founder:str="N/A"
+    founded:str="N/A"
+    branches:str="N/A"
+    employees:str="N/A"
+    summary:str="N/A"
 
-def get(name):
-    page = wikipediaapi.Wikipedia(
-        user_agent="MyApp/1.0 (student@example.com)", language='en'
-    ).page(name)
+wiki = wikipediaapi.Wikipedia(
+    user_agent="MyApp/1.0",
+    language="en"
+)
 
-    if not page.exists(): return print("Page not found")
+def fetch(b):
+    page = wiki.page(box.value)
 
-    find = lambda p,t: (re.search(p,t).group(1) if re.search(p,t) else None)
+    if page.exists():
+        data = Institution(summary=page.summary[:300])
 
-    d = Details(
-        founder = find(r'by ([A-Z][a-zA-Z\s\.]+)', page.summary),
-        founded = find(r'\b(19|20)\d{2}\b', page.summary),
-        branches= find(r'(\d+)\s+(?:campuses|branches)', page.text),
-        employees=find(r'(\d{1,3}(?:,\d{3})*) employees', page.text),
-        summary = '\n'.join(page.summary.split('.')[:4])
-    )
+        text = page.text
 
-    print("Institution:\n", name)
-    print(f"Founder: {d.founder or 'N/A'}")
-    print(f"Founded: {d.founded or 'N/A'}")
-    print(f"Branches: {d.branches or 'N/A'}")
-    print(f"Number of Employees: {d.employees or 'N/A'}")
-    print("Summary:\n", d.summary)
+        for line in text.split("\n"):
+            if "Founder" in line:
+                data.founder=line
+            elif "Founded" in line:
+                data.founded=line
+            elif "Branch" in line:
+                data.branches=line
+            elif "employees" in line.lower():
+                data.employees=line
 
-get(input("Enter Institution: "))
+        print("\nFounder:",data.founder)
+        print("\nFounded:",data.founded)
+        print("Branches:",data.branches)
+        print("Number of Employees:",data.employees)
+        print("Summary:",data.summary)
+
+box = widgets.Text(description="Institution:")
+button = widgets.Button(description="Fetch")
+
+button.on_click(fetch)
+
+display(box,button)
