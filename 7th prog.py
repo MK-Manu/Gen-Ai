@@ -1,23 +1,28 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from transformers import pipeline
 
 tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
 model = AutoModelForSeq2SeqLM.from_pretrained("facebook/bart-large-cnn")
 
-summarizer = pipeline(
-    "summarization",
-    model=model,
-    tokenizer=tokenizer
-)
-
 def summarize_text(text, max_length=130, min_length=50):
-    summary = summarizer(
+    inputs = tokenizer(
         text,
-        max_length=max_length,
-        min_length=min_length,
-        do_sample=False
+        max_length=1024,
+        truncation=True,
+        return_tensors="pt"
     )
-    return summary[0]["summary_text"]
+
+    summary_ids = model.generate(
+        inputs["input_ids"],
+        num_beams=4,
+        min_length=min_length,
+        max_length=max_length,
+        early_stopping=True
+    )
+
+    return tokenizer.decode(
+        summary_ids[0],
+        skip_special_tokens=True
+    )
 
 long_text = """
 Artificial Intelligence (AI) is a rapidly advancing field that aims to create machines capable of human-like thinking.
