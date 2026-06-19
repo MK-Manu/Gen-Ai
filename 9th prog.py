@@ -1,3 +1,4 @@
+!pip install wikipedia-api
 import wikipediaapi, re
 from pydantic import BaseModel
 from typing import Optional
